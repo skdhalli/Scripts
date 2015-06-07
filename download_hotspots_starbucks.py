@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from pymongo import MongoClient
 import xmltodict, json
 
-type_id = 1;
+type_id = "1";
 client = MongoClient();
 db = client.hotspots;
 hotspots_coll = db.sb_hotspots;
