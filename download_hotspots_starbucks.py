@@ -4,11 +4,14 @@ import xml.etree.ElementTree as ET
 from pymongo import MongoClient
 import xmltodict, json
 from time import sleep
+from time import gmtime, strftime
 
 type_id = "1";
 wait_sec = 5;
 max_retry_count = 5;
 
+def getCurrentTimeStamp():
+    return strftime("%Y-%m-%d %H:%M:%S", gmtime());
 
 def log_hotspot_ds(json_obj):
     hotspot_id = -1;
@@ -27,11 +30,14 @@ def log_hotspot_pg(zipcode):
             r = requests.get(req_url);
             succeeded =True;
         except:
+            print getCurrentTimeStamp()+": Connection failed. Retry attempt # "+str(retry);
             succeeded = False;
             retry += 1;
             if(retry == max_retry_count):
+                print getCurrentTimeStamp()+": Failed to get hotspots for "+str(zipcode)+" after "+str(retry)+" attempts";
                 break;
             else:
+                print getCurrentTimeStamp()+": Waiting for "+str(wait_sec)+" seconds before retry ..";
                 sleep(wait_sec);
         
 	if(succeeded and (r.status_code == requests.codes.ok)):
@@ -50,6 +56,8 @@ def log_hotspot_pg(zipcode):
                 with open('sb_hotspots.csv', 'a') as output_file:
                     output_file.write(type_id+","+latitude+","+longitude+","+str(mongoid)+'\n');
 
+print getCurrentTimeStamp()+": ****SCRIPT STARTED"+"****";
+
 with open('sb_hotspots.csv', 'w') as output_file:
 	output_file.write("type_id,latitude,longitude,doc_id"+'\n');
 
@@ -60,5 +68,9 @@ with MongoClient() as client:
     zipcodes = db.zipcodes.distinct('Zipcode');
 
 for zipcode in zipcodes:
-	log_hotspot_pg(zipcode);
+    print getCurrentTimeStamp()+": Started processing zip code - "+str(zipcode);
+    log_hotspot_pg(zipcode);
+    print getCurrentTimeStamp()+": Finished processing zip code - "+str(zipcode);
+
+print getCurrentTimeStamp()+": ****SCRIPT ENDED"+"****";
 	
