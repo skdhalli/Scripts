@@ -5,12 +5,18 @@ from pymongo import MongoClient
 import xmltodict, json
 
 type_id = "1";
-client = MongoClient();
-db = client.hotspots;
-hotspots_coll = db.sb_hotspots;
+
+with MongoClient() as client:
+    db = client.hotspots;
+    hotspots_coll = db.sb_hotspots;
+    hotspots_coll.remove(None,safe=True);
 
 def log_hotspot_ds(json_obj):
-    hotspot_id = hotspots_coll.insert_one(json_obj).inserted_id;
+    hotspot_id = -1;
+    with MongoClient() as client:
+        db = client.hotspots;
+        hotspots_coll = db.sb_hotspots;
+        hotspot_id = hotspots_coll.insert_one(json_obj).inserted_id;
     return hotspot_id;
 
 def log_hotspot_pg(zipcode):
